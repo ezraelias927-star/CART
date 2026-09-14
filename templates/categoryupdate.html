@@ -1,0 +1,260 @@
+{% extends "adminbase.html" %}
+
+{% block title %}Kategoria Zote | Duka Admin{% endblock %}
+
+{% block content %}
+<style>
+  .table-wrap{ border:1px solid var(--border); border-radius:var(--radius-md); overflow-x:auto; background:var(--bg); }
+  table.data-table{ width:100%; border-collapse:collapse; min-width:420px; }
+  .data-table thead th{ text-align:left; font-size:0.8rem; font-weight:600; color:var(--text-muted); padding:14px 16px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .data-table tbody td{ padding:12px 16px; border-bottom:1px solid var(--border); font-size:0.9rem; }
+  .icon-btn{ padding:7px 12px; border-radius:8px; font-size:0.82rem; font-weight:600; border:1px solid var(--border); background:var(--bg); }
+  .icon-btn:hover{ border-color:var(--orange); color:var(--orange-dark); }
+  .icon-btn.danger:hover{ border-color:var(--danger); color:var(--danger); }
+  #loading-indicator{ display:none; color:var(--text-muted); font-size:0.88rem; margin-bottom:12px; }
+
+  .modal-backdrop{ position:fixed; inset:0; background:rgba(36,31,27,0.45); display:none; align-items:center; justify-content:center; padding:20px; z-index:200; }
+  .modal-box{ background:var(--bg); border-radius:var(--radius-md); padding:26px; width:100%; max-width:400px; }
+</style>
+
+<div class="page-head">
+  <div>
+    <h1>Kategoria Zote</h1>
+    <p class="page-sub">Hariri au futa kategoria za bidhaa.</p>
+  
+
+<div id="loading-indicator">Inapakia kategoria kutoka kwenye server...</div>
+
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th><th>Jina la Kategoria</th><th>Vitendo</th>
+      </tr>
+    </thead>
+    <!-- JavaScript ndiyo itakayojaza rows hapa -->
+    <tbody id="category-table-body"></tbody>
+  </table>
+</div>
+
+<!-- POP-UP MODAL KWA AJILI YA EDIT / UPDATE -->
+<div id="edit-modal" class="modal-backdrop">
+  <div class="modal-box">
+    <h2>Hariri kategoria</h2>
+    <form id="edit-category-form">
+      <input type="hidden" id="edit-category-id">
+
+      <label for="edit-name">Jina la kategoria</label>
+      <input type="text" id="edit-name" required>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Hifadhi (Save)</button>
+        <button type="button" class="btn-ghost" onclick="showEditModal(false)">Ghairi (Cancel)</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ---------------------------------------------------------------------
+    // CONFIGURATION
+    // ---------------------------------------------------------------------
+    const API_BASE_URL = ''; // tupu kwa sababu template hii inatumika kutoka server hiyohiyo ya Flask
+
+    // ---------------------------------------------------------------------
+    // 1. HELPER / UI UTILITY FUNCTIONS
+    // ---------------------------------------------------------------------
+
+    function toggleLoading(isLoading) {
+        console.log(`[UI] Loading status changed: ${isLoading}`);
+        const indicator = document.getElementById('loading-indicator');
+        if (indicator) indicator.style.display = isLoading ? 'block' : 'none';
+    }
+
+    function showEditModal(show = true) {
+        console.log(`[UI] Toggling Edit Modal: ${show}`);
+        const modal = document.getElementById('edit-modal');
+        if (modal) modal.style.display = show ? 'flex' : 'none';
+    }
+
+    function clearEditForm() {
+        console.log("[UI] Clearing edit form inputs.");
+        document.getElementById('edit-category-id').value = '';
+        document.getElementById('edit-name').value = '';
+    }
+
+    // ---------------------------------------------------------------------
+    // 2. DOM RENDER FUNCTIONS (Kuchora UI)
+    // ---------------------------------------------------------------------
+
+    function renderCategoriesTable(categoriesArray) {
+        console.log("[Render] Rendering table rows for data:", categoriesArray);
+        const tableBody = document.getElementById('category-table-body');
+        tableBody.innerHTML = '';
+
+        if (!categoriesArray || categoriesArray.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Hakuna kategoria zilizopatikana.</td></tr>`;
+            return;
+        }
+
+        categoriesArray.forEach(category => {
+            const row = document.createElement('tr');
+            row.id = `category-row-${category.id}`;
+
+            row.innerHTML = `
+                <td>${category.id}</td>
+                <td>${category.name}</td>
+                <td>
+                    <button class="icon-btn" onclick="handleEditButtonClick(${category.id})">Hariri</button>
+                    <button class="icon-btn danger" onclick="handleDeleteButtonClick(${category.id}, '${category.name}')">Futa</button>
+                </td>
+            `;
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    function fillEditForm(categoryData) {
+        console.log("[Render] Filling edit form with category:", categoryData);
+        document.getElementById('edit-category-id').value = categoryData.id;
+        document.getElementById('edit-name').value = categoryData.name;
+    }
+
+    // ---------------------------------------------------------------------
+    // 3. API CALL FUNCTIONS (Kuwasiliana na Backend)
+    // ---------------------------------------------------------------------
+
+    // Tunahifadhi kategoria zilizopakiwa mara ya mwisho hapa, ili tusiombe server tena
+    // kila mara mtu anapobonyeza "Hariri" - tunatumia data iliyopo tayari.
+    let lastLoadedCategories = [];
+
+    async function apiGetAllCategories() {
+        console.log("[API Call] Fetching all categories...");
+        toggleLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/admin/api/categories`);
+            const result = await response.json();
+
+            if (response.ok) {
+                console.log("[API Success] Categories retrieved:", result);
+                lastLoadedCategories = result;
+                renderCategoriesTable(result);
+            } else {
+                console.error("[API Error] Server returned error:", result.message);
+                alert(`Error: ${result.message}`);
+            }
+        } catch (error) {
+            console.error("[API Fatal Error] Failed to fetch categories:", error);
+            alert("Shida ya kuunganishwa na mtandao/server imetokea!");
+        } finally {
+            toggleLoading(false);
+        }
+    }
+
+    async function apiUpdateCategory(id, updatedPayload) {
+        console.log(`[API Call] Updating category ID: ${id}`, updatedPayload);
+        try {
+            const response = await fetch(`${API_BASE_URL}/admin/category/update/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedPayload)
+            });
+            const result = await response.json();
+            return { ok: response.ok, message: result.message || result.error };
+        } catch (error) {
+            console.error(`[API Fatal Error] Update request failed:`, error);
+            return { ok: false, message: "Kosa la ki-mtandao pindi cha ku-update!" };
+        }
+    }
+
+    async function apiDeleteCategory(id) {
+        console.log(`[API Call] Deleting category ID: ${id}`);
+        try {
+            const response = await fetch(`${API_BASE_URL}/admin/category/delete/${id}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+            return { ok: response.ok, message: result.message || result.error };
+        } catch (error) {
+            console.error(`[API Fatal Error] Delete request failed:`, error);
+            return { ok: false, message: "Kosa la ki-mtandao pindi cha kufuta!" };
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // 4. EVENT HANDLERS (Zinazoitwa na Buttons au Forms)
+    // ---------------------------------------------------------------------
+
+    function handleEditButtonClick(categoryId) {
+        console.log(`[Event] Edit button clicked for category ID: ${categoryId}`);
+
+        const categoryData = lastLoadedCategories.find(c => c.id === categoryId);
+
+        if (categoryData) {
+            fillEditForm(categoryData);
+            showEditModal(true);
+        } else {
+            alert("Imefeli kupata taarifa za kategoria hii!");
+        }
+    }
+
+    async function handleSaveUpdateSubmit(event) {
+        event.preventDefault(); // Zuia ukurasa ku-reload
+        console.log("[Event] Save update form submitted.");
+
+        const categoryId = document.getElementById('edit-category-id').value;
+        const payload = {
+            name: document.getElementById('edit-name').value
+        };
+
+        const result = await apiUpdateCategory(categoryId, payload);
+
+        if (result.ok) {
+            alert(result.message || "Imefanikiwa kusasishwa!");
+            showEditModal(false);
+            clearEditForm();
+            apiGetAllCategories(); // Pakia upya jedwali kuonyesha mabadiliko
+        } else {
+            alert(`Imefeli ku-update: ${result.message}`);
+        }
+    }
+
+    async function handleDeleteButtonClick(categoryId, categoryName) {
+        console.log(`[Event] Delete button clicked for category ID: ${categoryId}`);
+
+        const confirmed = confirm(`Je, una uhakika unataka kufuta "${categoryName}"?`);
+        if (!confirmed) return;
+
+        const result = await apiDeleteCategory(categoryId);
+
+        if (result.ok) {
+            alert(result.message || "Imefanikiwa kufutwa!");
+            // Ondoa mstari kutoka kwenye meza papo hapo bila kurefresh meza nzima
+            const rowElement = document.getElementById(`category-row-${categoryId}`);
+            if (rowElement) rowElement.remove();
+        } else {
+            // Backend inazuia kufuta kategoria yenye bidhaa - ujumbe huo utaonekana hapa
+            alert(`Imefeli kufuta: ${result.message}`);
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // 5. INITIALIZATION (Ukurasa Unapoload)
+    // ---------------------------------------------------------------------
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        console.log("[Init] Page loaded. Starting initialization...");
+
+        // 1. Leta kategoria zote na uzichore kwenye table
+        await apiGetAllCategories();
+
+        // 2. Funga Event Listener kwenye Form ya Edit
+        const editForm = document.getElementById('edit-category-form');
+        if (editForm) {
+            editForm.addEventListener('submit', handleSaveUpdateSubmit);
+        }
+    });
+</script>
+{% endblock %}

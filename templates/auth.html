@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Ingia au Jisajili | Duka Letu{% endblock %}
+
+{% block content %}
+<style>
+  .auth-wrap{
+    max-width:400px;
+    margin:20px auto;
+  }
+  .auth-tabs{
+    display:flex;
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:4px;
+    margin-bottom:24px;
+  }
+  .auth-tab-btn{
+    flex:1;
+    padding:10px;
+    border:none;
+    background:none;
+    border-radius:999px;
+    font-weight:600;
+    color:var(--text-muted);
+  }
+  .auth-tab-btn.active{
+    background:var(--orange);
+    color:#fff;
+  }
+  .auth-form{ display:none; flex-direction:column; }
+  .auth-form.active{ display:flex; }
+  .auth-form label{ font-size:0.85rem; font-weight:600; margin-bottom:6px; }
+  .auth-form input{
+    padding:11px 13px;
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    margin-bottom:14px;
+    font-size:0.95rem;
+  }
+  .auth-form input:focus{ outline:none; border-color:var(--orange); }
+  .auth-submit-btn{
+    padding:12px;
+    background:var(--orange);
+    color:#fff;
+    border:none;
+    border-radius:var(--radius-sm);
+    font-weight:600;
+  }
+  .auth-submit-btn:hover{ background:var(--orange-dark); }
+  .auth-msg{
+    margin-top:14px;
+    padding:10px 12px;
+    border-radius:var(--radius-sm);
+    font-size:0.85rem;
+    display:none;
+  }
+  .auth-msg.error{ display:block; background:#FDECEC; color:#D64545; }
+  .auth-msg.success{ display:block; background:#E9F7EE; color:#227A45; }
+</style>
+
+<div class="auth-wrap">
+
+  <div class="auth-tabs">
+    <button type="button" class="auth-tab-btn active" id="loginTabBtn" onclick="switchAuthTab('login')">Ingia</button>
+    <button type="button" class="auth-tab-btn" id="registerTabBtn" onclick="switchAuthTab('register')">Jisajili</button>
+  </div>
+
+  <!-- FOMU YA LOGIN -->
+  <form id="loginForm" class="auth-form active">
+    <label for="loginUsername">Username</label>
+    <input type="text" id="loginUsername" required>
+
+    <label for="loginPassword">Password</label>
+    <input type="password" id="loginPassword" required>
+
+    <button type="submit" class="auth-submit-btn">Ingia</button>
+  </form>
+
+  <!-- FOMU YA REGISTER -->
+  <form id="registerForm" class="auth-form">
+    <label for="registerUsername">Username</label>
+    <input type="text" id="registerUsername" required>
+
+    <label for="registerEmail">Email</label>
+    <input type="email" id="registerEmail" required>
+
+    <label for="registerPassword">Password</label>
+    <input type="password" id="registerPassword" required>
+
+    <button type="submit" class="auth-submit-btn">Jisajili</button>
+  </form>
+
+  <div class="auth-msg" id="authMsg"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ---------------------------------------------------------------------
+  // TAB SWITCHING (function moja = kazi moja)
+  // ---------------------------------------------------------------------
+
+  // Inabadilisha kati ya fomu ya Login na Register.
+  function switchAuthTab(tabName) {
+    const isLogin = tabName === 'login';
+
+    document.getElementById('loginForm').classList.toggle('active', isLogin);
+    document.getElementById('registerForm').classList.toggle('active', !isLogin);
+    document.getElementById('loginTabBtn').classList.toggle('active', isLogin);
+    document.getElementById('registerTabBtn').classList.toggle('active', !isLogin);
+
+    hideAuthMsg();
+  }
+
+  // ---------------------------------------------------------------------
+  // MESSAGE HELPERS
+  // ---------------------------------------------------------------------
+
+  function showAuthMsg(text, isError) {
+    const msgEl = document.getElementById('authMsg');
+    msgEl.textContent = text;
+    msgEl.className = 'auth-msg ' + (isError ? 'error' : 'success');
+  }
+
+  function hideAuthMsg() {
+    document.getElementById('authMsg').className = 'auth-msg';
+  }
+
+  // ---------------------------------------------------------------------
+  // LOGIN
+  // ---------------------------------------------------------------------
+
+  async function handleLoginSubmit(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (!username || !password) return; // guard clause
+
+    try {
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        showAuthMsg(result.message, true);
+        return; // early return - isiendelee kwenda kwenye redirect
+      }
+
+      showAuthMsg(result.message, false);
+      window.location.href = '/'; // rudi home baada ya kuingia
+    } catch (error) {
+      showAuthMsg('Hitilafu ya mtandao. Jaribu tena.', true);
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // REGISTER
+  // ---------------------------------------------------------------------
+
+  async function handleRegisterSubmit(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('registerUsername').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const password = document.getElementById('registerPassword').value;
+
+    if (!username || !email || !password) return; // guard clause
+
+    try {
+      const response = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password })
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        showAuthMsg(result.message, true);
+        return; // early return
+      }
+
+      showAuthMsg(result.message, false);
+      window.location.href = '/'; // rudi home baada ya kujisajili
+    } catch (error) {
+      showAuthMsg('Hitilafu ya mtandao. Jaribu tena.', true);
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // INITIALIZATION
+  // ---------------------------------------------------------------------
+  document.addEventListener('DOMContentLoaded', function(){
+    document.getElementById('loginForm').addEventListener('submit', handleLoginSubmit);
+    document.getElementById('registerForm').addEventListener('submit', handleRegisterSubmit);
+  });
+</script>
+{% endblock %}

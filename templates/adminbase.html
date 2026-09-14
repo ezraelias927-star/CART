@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Admin | Duka{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FFFFFF;
+    --surface: #FFF9F4;
+    --border: #EFE6DC;
+    --text: #241F1B;
+    --text-muted: #85786C;
+    --orange: #FF5A1F;
+    --orange-dark: #E24A0F;
+    --orange-soft: #FFE7D9;
+    --danger: #D64545;
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --nav-h: 68px;
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  h1,h2,h3, .brand{ font-family: 'Sora', 'Inter', sans-serif; }
+  a{ text-decoration:none; color:inherit; }
+  ul{ list-style:none; margin:0; padding:0; }
+  button{ font-family:inherit; cursor:pointer; }
+
+  /* ---------- NAVBAR ---------- */
+  .navbar{
+    height: var(--nav-h);
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    padding: 0 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top:0;
+    z-index: 100;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:700;
+    font-size:1.15rem;
+    letter-spacing:-0.01em;
+  }
+  .brand .dot{
+    width:10px; height:10px; border-radius:50%;
+    background: var(--orange);
+    display:inline-block;
+  }
+
+  .nav-links{
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .nav-item{ position:relative; }
+  .nav-item > a, .nav-item > button.nav-link{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-weight:500;
+    font-size:0.95rem;
+    color: var(--text);
+    background:none;
+    border:none;
+  }
+  .nav-item > a:hover, .nav-item > button.nav-link:hover,
+  .nav-item.active > a, .nav-item.active > button.nav-link{
+    background: var(--orange-soft);
+    color: var(--orange-dark);
+  }
+  .caret{
+    width:8px; height:8px;
+    border-right:2px solid currentColor;
+    border-bottom:2px solid currentColor;
+    transform: rotate(45deg);
+    margin-top:-3px;
+    transition: transform .15s ease;
+  }
+  .nav-item.open .caret{ transform: rotate(-135deg); margin-top:3px; }
+
+  .dropdown{
+    position:absolute;
+    top: calc(100% + 8px);
+    left:0;
+    min-width: 220px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 12px 28px rgba(36,31,27,0.09);
+    padding: 6px;
+    display:none;
+  }
+  .nav-item.open .dropdown{ display:block; }
+  .dropdown a{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size:0.92rem;
+    color: var(--text);
+  }
+  .dropdown a:hover{ background: var(--surface); color: var(--orange-dark); }
+  .dropdown .divider{ height:1px; background:var(--border); margin:6px 4px; }
+  .dropdown .danger:hover{ color: var(--danger); background:#FDECEC; }
+
+  .nav-cta{
+    background: var(--orange);
+    color:#fff;
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    font-weight:600;
+    font-size:0.9rem;
+    border:none;
+  }
+  .nav-cta:hover{ background: var(--orange-dark); }
+
+  .hamburger{
+    display:none;
+    width:40px; height:40px;
+    border:1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background:none;
+    align-items:center;
+    justify-content:center;
+  }
+  .hamburger span, .hamburger span::before, .hamburger span::after{
+    content:'';
+    display:block;
+    width:18px; height:2px;
+    background: var(--text);
+    position:relative;
+    transition: all .15s ease;
+  }
+  .hamburger span::before{ position:absolute; top:-6px; }
+  .hamburger span::after{ position:absolute; top:6px; }
+
+  /* ---------- MAIN CONTENT ---------- */
+  main{
+    flex:1;
+    width:100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 36px 28px 60px;
+  }
+  .placeholder-card{
+    border:1px dashed var(--border);
+    border-radius: var(--radius-md);
+    padding: 40px 24px;
+    text-align:center;
+    color: var(--text-muted);
+    background: var(--surface);
+  }
+  .placeholder-card h1{
+    color: var(--text);
+    font-size:1.3rem;
+    margin:0 0 8px;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top: 1px solid var(--border);
+    padding: 22px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    font-size:0.85rem;
+    color: var(--text-muted);
+  }
+  footer .foot-links{
+    display:flex;
+    gap:18px;
+  }
+  footer .foot-links a:hover{ color: var(--orange-dark); }
+
+  /* ---------- PAGE HEAD (kila ukurasa wa content) ---------- */
+  .page-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:24px;
+  }
+  .page-head h1{ font-size:1.4rem; margin:0 0 4px; }
+  .page-sub{ margin:0; color:var(--text-muted); font-size:0.92rem; }
+  .link-back{
+    font-size:0.88rem;
+    font-weight:600;
+    color: var(--orange-dark);
+    white-space:nowrap;
+  }
+  .link-back:hover{ text-decoration:underline; }
+
+  /* ---------- FORM CARD (ongeza/hariri) ---------- */
+  .form-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 28px;
+    max-width: 480px;
+  }
+  .form-card form{ display:flex; flex-direction:column; }
+  .form-card label{
+    font-size:0.85rem;
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  .form-card input,
+  .form-card select,
+  .form-card textarea{
+    font-family:'Inter', sans-serif;
+    font-size:0.95rem;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    margin-bottom: 4px;
+    width:100%;
+  }
+  .form-card input:focus,
+  .form-card select:focus,
+  .form-card textarea:focus{
+    outline:none;
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px var(--orange-soft);
+  }
+  .form-card textarea{ resize:vertical; min-height:90px; }
+  .field-error{
+    min-height:18px;
+    color: var(--danger);
+    font-size:0.8rem;
+    margin-bottom:14px;
+  }
+  .form-row{ display:flex; gap:16px; }
+  .form-row > div{ flex:1; display:flex; flex-direction:column; }
+
+  .form-actions{
+    display:flex;
+    gap:10px;
+    margin-top:8px;
+  }
+  .btn-primary{
+    background: var(--orange);
+    color:#fff;
+    border:none;
+    padding: 12px 22px;
+    border-radius: var(--radius-sm);
+    font-weight:600;
+    font-size:0.92rem;
+  }
+  .btn-primary:hover{ background: var(--orange-dark); }
+  .btn-primary:disabled{ opacity:0.6; cursor:not-allowed; }
+  .btn-ghost{
+    background:none;
+    border:1px solid var(--border);
+    color: var(--text-muted);
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    font-weight:600;
+    font-size:0.92rem;
+  }
+  .btn-ghost:hover{ border-color: var(--text-muted); color: var(--text); }
+
+  .form-msg{
+    margin-top:16px;
+    padding: 11px 14px;
+    border-radius: var(--radius-sm);
+    font-size:0.88rem;
+    font-weight:500;
+  }
+  .form-msg-success{ background:#E9F7EE; color:#227A45; }
+  .form-msg-error{ background:#FDECEC; color:var(--danger); }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 860px){
+    .hamburger{ display:flex; }
+    .nav-links{
+      position: fixed;
+      top: var(--nav-h);
+      left:0; right:0;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-direction:column;
+      align-items: stretch;
+      padding: 10px;
+      gap:2px;
+      transform: translateY(-8px);
+      opacity:0;
+      pointer-events:none;
+      transition: all .15s ease;
+      max-height: calc(100vh - var(--nav-h));
+      overflow-y:auto;
+    }
+    .nav-links.mobile-open{
+      transform: translateY(0);
+      opacity:1;
+      pointer-events:auto;
+    }
+    .nav-item > a, .nav-item > button.nav-link{ width:100%; justify-content:space-between; }
+    .dropdown{
+      position:static;
+      box-shadow:none;
+      border:none;
+      margin-left:10px;
+      display:none;
+    }
+    .nav-item.open .dropdown{ display:block; }
+    .nav-cta{ width:100%; text-align:center; margin-top:6px; }
+
+    footer{ flex-direction:column; align-items:flex-start; }
+    .form-row{ flex-direction:column; gap:0; }
+    .form-card{ padding:20px; max-width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="{{ url_for('home') }}" class="brand"><span class="dot"></span>Duka Admin</a>
+
+  <button class="hamburger" id="hamburgerBtn" aria-label="Fungua menyu">
+    <span></span>
+  </button>
+
+  <ul class="nav-links" id="navLinks">
+    <li class="nav-item">
+      <a href="{{ url_for('home') }}">Dashibodi</a>
+    </li>
+
+    <li class="nav-item" data-dropdown="kategoria">
+      <button type="button" class="nav-link">Kategoria <span class="caret"></span></button>
+      <ul class="dropdown">
+        <li><a href="{{ url_for('category_page') }}">+ Ongeza kategoria</a></li>
+        <li><a href="{{ url_for('category_update') }}">update na delete</a></li>
+      </ul>
+    </li>
+
+    <li class="nav-item" data-dropdown="bidhaa">
+      <button type="button" class="nav-link">Bidhaa <span class="caret"></span></button>
+      <ul class="dropdown">
+        <li><a href="{{ url_for('bidhaa_page') }}">+ Ongeza bidhaa</a></li>
+        <li><a href="{{ url_for('bidhaa_update') }}">update na delete</a></li>
+      </ul>
+    </li>
+
+    <li class="nav-item">
+      <a href="{{ url_for('home') }}">Maagizo</a>
+    </li>
+
+    <li class="nav-item">
+      <button type="button" class="nav-cta" onclick="window.location.href='admin/bidhaa'">+ Ongeza bidhaa</button>
+    </li>
+  </ul>
+</nav>
+
+<main>
+  {% block content %}
+  <div class="placeholder-card">
+    <h1>Karibu kwenye eneo la admin</h1>
+    <p>Ukurasa maalum (mfano orodha ya bidhaa au fomu ya kategoria) utaonekana hapa. Kila ukurasa mwingine unatakiwa ku-extend base.html hii na kujaza block hii ya "content".</p>
+  </div>
+  {% endblock %}
+</main>
+
+<footer>
+  <span>&copy; <span id="year"></span> Duka Admin. Haki zote zimehifadhiwa.</span>
+  <div class="foot-links">
+    <a href="{{ url_for('home') }}">Dashibodi</a>
+    <a href="{{ url_for('category_list_page') }}">Kategoria</a>
+    <a href="{{ url_for('product_list_page') }}">Bidhaa</a>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Dropdown toggle (kategoria/bidhaa)
+  document.querySelectorAll('.nav-item[data-dropdown]').forEach(function(item){
+    var btn = item.querySelector('.nav-link');
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.nav-item.open').forEach(function(i){ i.classList.remove('open'); });
+      if(!wasOpen){ item.classList.add('open'); }
+    });
+  });
+  document.addEventListener('click', function(){
+    document.querySelectorAll('.nav-item.open').forEach(function(i){ i.classList.remove('open'); });
+  });
+
+  // Hamburger (mobile) toggle
+  var hamburgerBtn = document.getElementById('hamburgerBtn');
+  var navLinks = document.getElementById('navLinks');
+  hamburgerBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    navLinks.classList.toggle('mobile-open');
+  });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

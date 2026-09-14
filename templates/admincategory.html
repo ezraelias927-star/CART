@@ -1,0 +1,83 @@
+{% extends "adminbase.html" %}
+
+{% block title %}Ongeza Kategoria | Duka Admin{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Ongeza Kategoria</h1>
+    <p class="page-sub">Jaza jina la kategoria mpya ya bidhaa (mfano: Nguo, Viatu, Simu).</p>
+  </div>
+  <a href="{{ url_for('category_list_page') }}" class="link-back">&larr; Kategoria zote</a>
+</div>
+
+<div class="form-card">
+  <form id="categoryForm" novalidate>
+    <label for="catName">Jina la kategoria</label>
+    <input type="text" id="catName" name="name" placeholder="mfano: Nguo za Wanaume" required autocomplete="off">
+    <span class="field-error" id="catNameError"></span>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary" id="submitBtn">Hifadhi kategoria</button>
+      <button type="reset" class="btn-ghost">Futa fomu</button>
+    </div>
+  </form>
+
+  <div id="formMsg" class="form-msg" hidden></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const form = document.getElementById('categoryForm');
+  const nameInput = document.getElementById('catName');
+  const nameError = document.getElementById('catNameError');
+  const submitBtn = document.getElementById('submitBtn');
+  const formMsg = document.getElementById('formMsg');
+
+  function showMsg(text, isError){
+    formMsg.textContent = text;
+    formMsg.hidden = false;
+    formMsg.classList.toggle('form-msg-error', !!isError);
+    formMsg.classList.toggle('form-msg-success', !isError);
+  }
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    nameError.textContent = '';
+    formMsg.hidden = true;
+
+    const name = nameInput.value.trim();
+    if(!name){
+      nameError.textContent = 'Tafadhali andika jina la kategoria.';
+      nameInput.focus();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Inahifadhi...';
+
+    try{
+      const res = await fetch("{{ url_for('add_category') }}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name })
+      });
+
+      const data = await res.json();
+
+      if(res.ok){
+        showMsg(data.message || 'Kategoria imeongezwa!', false);
+        form.reset();
+      } else {
+        showMsg(data.error || data.message || 'Imeshindwa kuongeza kategoria.', true);
+      }
+    } catch(err){
+      showMsg('Hitilafu ya mtandao. Jaribu tena.', true);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Hifadhi kategoria';
+    }
+  });
+</script>
+{% endblock %}

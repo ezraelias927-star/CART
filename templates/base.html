@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Duka Letu{% endblock %}</title>
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --surface:#FFF9F4;
+    --border:#EFE6DC;
+    --text:#241F1B;
+    --text-muted:#85786C;
+    --orange:#FF5A1F;
+    --orange-dark:#E24A0F;
+    --orange-soft:#FFE7D9;
+    --radius-sm:8px;
+    --radius-md:14px;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    color:var(--text);
+    background:var(--bg);
+  }
+  a{ text-decoration:none; color:inherit; }
+  button{ font-family:inherit; cursor:pointer; }
+
+  /* ---------- NAVBAR (Brand + Icons) ---------- */
+  .top-navbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 24px;
+    border-bottom:1px solid var(--border);
+  }
+  .brand{ font-size:1.25rem; font-weight:bold; color:var(--orange-dark); }
+  .nav-icons{ display:flex; align-items:center; gap:18px; }
+  .icon-btn{
+    background:none; border:none;
+    font-size:1.3rem;
+    position:relative;
+    color:var(--text);
+  }
+  .cart-count{
+    position:absolute;
+    top:-6px; right:-10px;
+    background:var(--orange);
+    color:#fff;
+    font-size:0.7rem;
+    font-weight:bold;
+    padding:1px 6px;
+    border-radius:999px;
+  }
+  .icon-btn.favorited{ color:var(--orange); }
+
+  /* ---------- SEARCH BAR ---------- */
+  .search-bar-wrap{ padding:12px 24px; border-bottom:1px solid var(--border); }
+  .search-bar-wrap input{
+    width:100%;
+    max-width:520px;
+    padding:10px 14px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    font-size:0.95rem;
+  }
+  .search-bar-wrap input:focus{ outline:none; border-color:var(--orange); }
+
+  /* ---------- CATEGORY TABS ---------- */
+  .category-bar{
+    display:flex;
+    gap:10px;
+    padding:12px 24px;
+    overflow-x:auto;
+    border-bottom:1px solid var(--border);
+  }
+  .category-pill{
+    padding:8px 16px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    font-size:0.85rem;
+    white-space:nowrap;
+  }
+  .category-pill.active,
+  .category-pill:hover{
+    background:var(--orange-soft);
+    color:var(--orange-dark);
+    border-color:var(--orange-soft);
+  }
+
+  /* ---------- MAIN CONTENT ---------- */
+  main{ padding:24px; }
+
+  /* ---------- CART PANEL (dropdown chini ya icon ya cart) ---------- */
+  .cart-panel{
+    position:fixed;
+    top:64px; right:16px;
+    width:300px;
+    max-height:70vh;
+    overflow-y:auto;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    box-shadow:0 12px 28px rgba(36,31,27,0.15);
+    padding:16px;
+    display:none;
+    z-index:300;
+  }
+  .cart-panel.open{ display:block; }
+  #favoritesPanel{ right:330px; }
+  .cart-panel h3{ margin:0 0 12px; font-size:1rem; }
+  .cart-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 0;
+    border-bottom:1px solid var(--border);
+    font-size:0.85rem;
+  }
+  .cart-item button{
+    background:none; border:none;
+    color:var(--orange-dark);
+    font-size:0.8rem;
+  }
+  .cart-empty{ color:var(--text-muted); font-size:0.85rem; }
+  .cart-total{
+    display:flex; justify-content:space-between;
+    margin-top:12px; font-weight:bold;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top:1px solid var(--border);
+    padding:20px 24px;
+    text-align:center;
+    color:var(--text-muted);
+    font-size:0.85rem;
+  }
+
+  @media (max-width:600px){
+    .top-navbar{ padding:12px 16px; }
+    main{ padding:16px; }
+    #favoritesPanel{ right:16px; left:16px; width:auto; }
+    .cart-panel{ right:16px; left:16px; width:auto; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="top-navbar">
+  <a href="{{ url_for('home') }}" class="brand">Duka Letu</a>
+  <div class="nav-icons">
+    <button class="icon-btn" id="favoritesToggleBtn" title="Vipendwa">
+      &#9825;
+      <span class="cart-count" id="favoritesCount">0</span>
+    </button>
+    <button class="icon-btn" title="Akaunti">&#128100;</button>
+    <button class="icon-btn" id="cartToggleBtn" title="Cart">
+      &#128722;
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</nav>
+
+<div class="search-bar-wrap">
+  <input type="text" id="searchInput" placeholder="Tafuta bidhaa...">
+</div>
+
+<div class="category-bar">
+  <a class="category-pill active" href="#">Zote</a>
+  <a class="category-pill" href="#">Kategoria 1</a>
+  <a class="category-pill" href="#">Kategoria 2</a>
+  <a class="category-pill" href="#">Kategoria 3</a>
+</div>
+
+<!-- FAVORITES PANEL: inaonekana/kufichwa unapobonyeza icon ya moyo -->
+<div class="cart-panel" id="favoritesPanel">
+  <h3>Vipendwa Vyako</h3>
+  <div id="favoritesItemsList"></div>
+</div>
+
+<!-- CART PANEL: inaonekana/kufichwa unapobonyeza icon ya cart -->
+<div class="cart-panel" id="cartPanel">
+  <h3>Bidhaa Zako</h3>
+  <div id="cartItemsList"></div>
+  <div class="cart-total" id="cartTotal" hidden>
+    <span>Jumla</span>
+    <span id="cartTotalAmount">Tsh 0</span>
+  </div>
+</div>
+
+<main>
+  {% block content %}
+  <!-- Kurasa nyingine (mfano orodha ya bidhaa) zita-extend base.html hii -->
+  {% endblock %}
+</main>
+
+<footer>
+  &copy; <span id="year"></span> Duka Letu. Haki zote zimehifadhiwa.
+</footer>
+
+<script>
+  // =====================================================================
+  // CART LOGIC (rahisi, kila function ina kazi moja tu)
+  // =====================================================================
+
+  // Inasoma cart kutoka localStorage. Ikiwa haipo, inarudisha list tupu.
+  function getCart() {
+    const raw = localStorage.getItem('cart');
+    if (!raw) return [];
+    return JSON.parse(raw);
+  }
+
+  // Inahifadhi cart ndani ya localStorage.
+  function saveCart(cart) {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }
+
+  // Inaongeza bidhaa kwenye cart. Ikiwa tayari ipo, inaongeza idadi (qty) tu.
+  function addToCart(id, name, price) {
+    if (!id || !name) return; // guard clause: data isiyo sahihi
+
+    const cart = getCart();
+    const existingItem = cart.find(item => item.id === id);
+
+    if (existingItem) {
+      existingItem.qty += 1;
+    } else {
+      cart.push({ id, name, price, qty: 1 });
+    }
+
+    saveCart(cart);
+    renderCart();
+  }
+
+  // Inaondoa bidhaa moja kabisa kwenye cart kwa kutumia id yake.
+  function removeFromCart(id) {
+    if (!id) return; // guard clause
+
+    const cart = getCart().filter(item => item.id !== id);
+    saveCart(cart);
+    renderCart();
+  }
+
+  // Inahesabu jumla ya idadi ya bidhaa zote (qty) kwenye cart.
+  function getCartItemCount(cart) {
+    return cart.reduce((total, item) => total + item.qty, 0);
+  }
+
+  // Inahesabu bei jumla ya bidhaa zote kwenye cart.
+  function getCartTotalPrice(cart) {
+    return cart.reduce((total, item) => total + (item.price * item.qty), 0);
+  }
+
+  // Inaonyesha idadi ya bidhaa juu ya icon ya cart (badge).
+  function updateCartBadge(cart) {
+    document.getElementById('cartCount').textContent = getCartItemCount(cart);
+  }
+
+  // Inachora orodha ya bidhaa zilizopo ndani ya cart panel.
+  function renderCartItemsList(cart) {
+    const listEl = document.getElementById('cartItemsList');
+
+    if (cart.length === 0) {
+      listEl.innerHTML = '<p class="cart-empty">Cart yako iko tupu.</p>';
+      return;
+    }
+
+    listEl.innerHTML = cart.map(item => `
+      <div class="cart-item">
+        <span>${item.name} x${item.qty}</span>
+        <button onclick="removeFromCart('${item.id}')">Ondoa</button>
+      </div>
+    `).join('');
+  }
+
+  // Inaonyesha jumla ya bei chini ya cart panel.
+  function renderCartTotal(cart) {
+    const totalRow = document.getElementById('cartTotal');
+    const totalAmountEl = document.getElementById('cartTotalAmount');
+
+    if (cart.length === 0) {
+      totalRow.hidden = true;
+      return;
+    }
+
+    totalRow.hidden = false;
+    totalAmountEl.textContent = 'Tsh ' + getCartTotalPrice(cart).toLocaleString();
+  }
+
+  // Function kuu ya kuchora cart nzima (badge + list + total) - hii ndiyo huitwa mahali pengine
+  function renderCart() {
+    const cart = getCart();
+    updateCartBadge(cart);
+    renderCartItemsList(cart);
+    renderCartTotal(cart);
+  }
+
+  // Inafungua au kufunga cart panel.
+  function toggleCartPanel() {
+    document.getElementById('cartPanel').classList.toggle('open');
+  }
+
+  // =====================================================================
+  // FAVORITES LOGIC (mtindo uleule wa cart, function moja = kazi moja)
+  // =====================================================================
+
+  // Inasoma favorites kutoka localStorage.
+  function getFavorites() {
+    const raw = localStorage.getItem('favorites');
+    if (!raw) return [];
+    return JSON.parse(raw);
+  }
+
+  // Inahifadhi favorites ndani ya localStorage.
+  function saveFavorites(favorites) {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }
+
+  // Inaangalia kama bidhaa fulani (id) tayari ipo kwenye favorites.
+  function isFavorited(id) {
+    return getFavorites().some(item => item.id === id);
+  }
+
+  // Inabadilisha muonekano wa moyo (button) kila mahali ilipo kwenye ukurasa
+  // - hii inatumika ndani ya home.html na hapa hapa base.html.
+  function syncFavoriteButtons(id, isFav) {
+    document.querySelectorAll(`[data-fav-id="${id}"]`).forEach(function(btn){
+      btn.classList.toggle('favorited', isFav);
+    });
+  }
+
+  // Inaongeza bidhaa kwenye favorites.
+  function addFavorite(id, name, price) {
+    if (!id) return; // guard clause
+
+    const favorites = getFavorites();
+    favorites.push({ id, name, price });
+    saveFavorites(favorites);
+    syncFavoriteButtons(id, true);
+    renderFavorites();
+  }
+
+  // Inaondoa bidhaa kwenye favorites.
+  function removeFavorite(id) {
+    if (!id) return; // guard clause
+
+    const favorites = getFavorites().filter(item => item.id !== id);
+    saveFavorites(favorites);
+    syncFavoriteButtons(id, false);
+    renderFavorites();
+  }
+
+  // Inabadilisha hali - ikiwa ipo favorites inaiondoa, kama haipo inaiongeza.
+  function toggleFavorite(id, name, price) {
+    if (!id) return; // guard clause
+
+    if (isFavorited(id)) {
+      removeFavorite(id);
+      return; // early return badala ya if/else ndefu
+    }
+    addFavorite(id, name, price);
+  }
+
+  // Inaonyesha idadi ya bidhaa juu ya icon ya moyo (badge).
+  function updateFavoritesBadge(favorites) {
+    document.getElementById('favoritesCount').textContent = favorites.length;
+  }
+
+  // Inachora orodha ya bidhaa zilizopo ndani ya favorites panel.
+  function renderFavoritesItemsList(favorites) {
+    const listEl = document.getElementById('favoritesItemsList');
+
+    if (favorites.length === 0) {
+      listEl.innerHTML = '<p class="cart-empty">Bado hujaweka chochote kwenye vipendwa.</p>';
+      return;
+    }
+
+    listEl.innerHTML = favorites.map(item => `
+      <div class="cart-item">
+        <span>${item.name}</span>
+        <button onclick="removeFavorite('${item.id}')">Ondoa</button>
+      </div>
+    `).join('');
+  }
+
+  // Function kuu ya kuchora favorites nzima (badge + list) - hii ndiyo huitwa mahali pengine.
+  function renderFavorites() {
+    const favorites = getFavorites();
+    updateFavoritesBadge(favorites);
+    renderFavoritesItemsList(favorites);
+  }
+
+  // Inafungua au kufunga favorites panel.
+  function toggleFavoritesPanel() {
+    document.getElementById('favoritesPanel').classList.toggle('open');
+  }
+
+  // =====================================================================
+  // GENERIC PANEL HELPER (inatumika na cart na favorites - DRY)
+  // =====================================================================
+
+  // Inafunga panel ukibonyeza mahali pengine nje ya panel na kitufe chake.
+  function closePanelOnOutsideClick(panelId, toggleBtnId, clickEvent) {
+    const panel = document.getElementById(panelId);
+    const toggleBtn = document.getElementById(toggleBtnId);
+    const clickedInsidePanel = panel.contains(clickEvent.target);
+    const clickedToggleBtn = toggleBtn.contains(clickEvent.target);
+
+    if (!clickedInsidePanel && !clickedToggleBtn) {
+      panel.classList.remove('open');
+    }
+  }
+
+  // =====================================================================
+  // EVENT LISTENERS
+  // =====================================================================
+
+  document.getElementById('cartToggleBtn').addEventListener('click', toggleCartPanel);
+  document.getElementById('favoritesToggleBtn').addEventListener('click', toggleFavoritesPanel);
+
+  // Funga panel yoyote ukibonyeza mahali pengine nje yake.
+  document.addEventListener('click', function(e){
+    closePanelOnOutsideClick('cartPanel', 'cartToggleBtn', e);
+    closePanelOnOutsideClick('favoritesPanel', 'favoritesToggleBtn', e);
+  });
+
+  // =====================================================================
+  // INITIALIZATION
+  // =====================================================================
+
+  document.getElementById('year').textContent = new Date().getFullYear();
+  renderCart();       // onyesha cart iliyopo tayari
+  renderFavorites();  // onyesha favorites zilizopo tayari
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

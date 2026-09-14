@@ -1,0 +1,144 @@
+{% extends "adminbase.html" %}
+
+{% block title %}Ongeza Bidhaa | Duka Admin{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Ongeza Bidhaa</h1>
+    <p class="page-sub">Jaza taarifa za bidhaa mpya utakayoiweka kwenye duka.</p>
+  
+
+<div class="form-card">
+  <form id="productForm" novalidate>
+
+    <label for="prodName">Jina la bidhaa</label>
+    <input type="text" id="prodName" name="name" placeholder="mfano: Kiatu cha Ngozi" required autocomplete="off">
+    <span class="field-error" id="prodNameError"></span>
+
+    <label for="prodCategory">Kategoria</label>
+    <select id="prodCategory" name="category_id" required>
+      <option value="" selected disabled>-- Chagua kategoria --</option>
+      {% for cat in categories %}
+      <option value="{{ cat.id }}">{{ cat.name }}</option>
+      {% endfor %}
+    </select>
+    <span class="field-error" id="prodCategoryError">
+      {% if not categories %}Hakuna kategoria bado. <a href="{{ url_for('category_page') }}">Ongeza kategoria kwanza</a>.{% endif %}
+    </span>
+
+    <div class="form-row">
+      <div>
+        <label for="prodPrice">Bei (Tsh)</label>
+        <input type="number" id="prodPrice" name="price" placeholder="mfano: 25000" min="0" step="0.01" required>
+        <span class="field-error" id="prodPriceError"></span>
+      </div>
+      <div>
+        <label for="prodStock">Idadi stoo</label>
+        <input type="number" id="prodStock" name="stock_quantity" placeholder="mfano: 10" min="0" step="1" value="0">
+        <span class="field-error"></span>
+      </div>
+    </div>
+
+    <label for="prodImage">Picha (URL)</label>
+    <input type="url" id="prodImage" name="image_url" placeholder="https://.../picha.jpg" autocomplete="off">
+    <span class="field-error"></span>
+
+    <div id="imgPreviewWrap" class="img-preview-wrap" hidden>
+      <img id="imgPreview" alt="Onyesho la picha ya bidhaa">
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary" id="submitBtn">Hifadhi bidhaa</button>
+      <button type="reset" class="btn-ghost">Futa fomu</button>
+    </div>
+  </form>
+
+  <div id="formMsg" class="form-msg" hidden></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const form = document.getElementById('productForm');
+  const nameInput = document.getElementById('prodName');
+  const categorySelect = document.getElementById('prodCategory');
+  const priceInput = document.getElementById('prodPrice');
+  const stockInput = document.getElementById('prodStock');
+  const imageInput = document.getElementById('prodImage');
+  const nameError = document.getElementById('prodNameError');
+  const categoryError = document.getElementById('prodCategoryError');
+  const priceError = document.getElementById('prodPriceError');
+  const submitBtn = document.getElementById('submitBtn');
+  const formMsg = document.getElementById('formMsg');
+  const imgPreviewWrap = document.getElementById('imgPreviewWrap');
+  const imgPreview = document.getElementById('imgPreview');
+
+  imageInput.addEventListener('input', function(){
+    const url = imageInput.value.trim();
+    if(url){
+      imgPreview.src = url;
+      imgPreviewWrap.hidden = false;
+    } else {
+      imgPreviewWrap.hidden = true;
+    }
+  });
+  imgPreview.addEventListener('error', function(){ imgPreviewWrap.hidden = true; });
+
+  function showMsg(text, isError){
+    formMsg.textContent = text;
+    formMsg.hidden = false;
+    formMsg.classList.toggle('form-msg-error', !!isError);
+    formMsg.classList.toggle('form-msg-success', !isError);
+  }
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    nameError.textContent = '';
+    priceError.textContent = '';
+    formMsg.hidden = true;
+
+    const name = nameInput.value.trim();
+    const categoryId = categorySelect.value;
+    const price = priceInput.value;
+
+    let hasError = false;
+    if(!name){ nameError.textContent = 'Tafadhali andika jina la bidhaa.'; hasError = true; }
+    if(!categoryId){ categoryError.textContent = 'Tafadhali chagua kategoria.'; hasError = true; }
+    if(price === '' || Number(price) < 0){ priceError.textContent = 'Tafadhali weka bei sahihi.'; hasError = true; }
+    if(hasError) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Inahifadhi...';
+
+    try{
+      const res = await fetch("{{ url_for('add_product') }}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          price: price,
+          category_id: categoryId,
+          stock_quantity: stockInput.value || 0,
+          image_url: imageInput.value.trim()
+        })
+      });
+
+      const data = await res.json();
+
+      if(res.ok){
+        showMsg(data.message || 'Bidhaa imeongezwa!', false);
+        form.reset();
+        imgPreviewWrap.hidden = true;
+      } else {
+        showMsg(data.message || data.error || 'Imeshindwa kuongeza bidhaa.', true);
+      }
+    } catch(err){
+      showMsg('Hitilafu ya mtandao. Jaribu tena.', true);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Hifadhi bidhaa';
+    }
+  });
+</script>
+{% endblock %}
