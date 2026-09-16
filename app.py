@@ -6,6 +6,13 @@ from database import db, User,Category,Product,Order,OrderItem
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import session
 
+# Usanidi wa folda la kuhifadhi picha (hakikisha ipo kwenye app config yako)
+UPLOAD_FOLDER = 'static/uploads/products'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 app = Flask(__name__)
 app.config.from_object(Config)
 
@@ -23,39 +30,53 @@ def add_category():
     db.session.commit()
     return jsonify({'message': 'Category imeongezwa!', 'id': new_cat.id}), 201
 
-# kuongeza bidhaa
+
+#KUONGEZA BIDHAA
 @app.route('/admin/product/add', methods=['POST'])
 def add_product():
-    # 1. Kupokea JSON payload kutoka kwa JavaScript Fetch API
-    data = request.get_json()
+    # 1. Kupokea data za maandishi kutoka request.form (sio get_json!)
+    name = request.form.get('name')
+    price = request.form.get('price')
+    category_id = request.form.get('category_id')
+    stock_quantity = request.form.get('stock_quantity', 0)
 
-    if not data:
-        return jsonify({'status': 'error', 'message': 'Hukutuma data za JSON!'}), 400
-
-    # 2. Kuchambua variable kutoka kwenye JSON
-    name = data.get('name')
-    price = data.get('price')
-    category_id = data.get('category_id')
-    stock_quantity = data.get('stock_quantity', 0)
-    image_url = data.get('image_url', '')
-
-    # 3. Uhakiki wa msingi (Validation)
+    # 2. Uhakiki wa msingi (Validation)
     if not name or price is None or not category_id:
-        return jsonify({'status': 'error', 'message': 'Jina, Bei, na Category vinatakiwa!'}), 400
+        return jsonify({'status': 'error', 'message': 'Jina, Bei, na Kategoria vinatakiwa!'}), 400
 
-    # 4. Angalia kama category_id ipo kweli kwenye database
+    # 3. Kagua kama Kategoria ipo kwenye DB
     category = Category.query.get(category_id)
     if not category:
-        return jsonify({'status': 'error', 'message': 'Category uliyochagua haipo!'}), 404
+        return jsonify({'status': 'error', 'message': 'Kategoria uliyochagua haipo!'}), 404
 
-    # 5. Kuingiza data kwenye Database
+    # 4. Kushughulikia Picha kutoka request.files
+    image_url = 'default-product.png' # Picha ya akiba kama hajaupload
+    
+    if 'image' in request.files:
+        file = request.files['image']
+        
+        # Kama mtumiaji amechagua faili na lina jina
+        if file and file.filename != '' and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            
+            # Hakikisha folda lipo kabla ya kusihihifadhi
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            
+            # Hifadhi faili kwenye server
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(file_path)
+            
+            # Weka path itakayohifadhiwa kwenye database
+            image_url = f"/static/uploads/products/{filename}"
+
+    # 5. Kuingiza Data kwenye Database
     try:
         new_product = Product(
             name=name.strip(),
             price=float(price),
             category_id=int(category_id),
             stock_quantity=int(stock_quantity),
-            image_url=image_url.strip()
+            image_url=image_url
         )
         
         db.session.add(new_product)
@@ -69,8 +90,10 @@ def add_product():
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'status': 'error', 'message': 'Imeshindwa kuhifadhi bidhaa kwenye database!'}), 500
-
+        return jsonify({
+            'status': 'error', 
+            'message': f'Imeshindwa kuhifadhi bidhaa: {str(e)}'
+        }), 500
 
 # UPDATE: Inabadilisha jina la category kwa kutumia ID
 @app.route('/admin/category/update/<int:id>', methods=['PUT'])

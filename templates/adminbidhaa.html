@@ -40,8 +40,8 @@
       </div>
     </div>
 
-    <label for="prodImage">Picha (URL)</label>
-    <input type="url" id="prodImage" name="image_url" placeholder="https://.../picha.jpg" autocomplete="off">
+    <label for="prodImage">Picha (pakia picha)</label>
+    <input type="file" id="prodImage" name="image_url" placeholder="https://.../picha.jpg" autocomplete="off">
     <span class="field-error"></span>
 
     <div id="imgPreviewWrap" class="img-preview-wrap" hidden>
@@ -110,18 +110,21 @@
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Inahifadhi...';
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('price', price);
+    formData.append('category_id', categoryId);
+    formData.append('stock_quantity', stockInput.value || 0);
+
+    // Picha ni optional - tunaongeza tu kama mtu amechagua faili
+    if (imageInput.files[0]) {
+    formData.append('image', imageInput.files[0]);
+  }
 
     try{
       const res = await fetch("{{ url_for('add_product') }}", {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name,
-          price: price,
-          category_id: categoryId,
-          stock_quantity: stockInput.value || 0,
-          image_url: imageInput.value.trim()
-        })
+        body: formData
       });
 
       const data = await res.json();
