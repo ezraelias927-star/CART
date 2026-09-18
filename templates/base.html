@@ -280,7 +280,7 @@ async function handleCartSubmit() {
   }
 
   // Inaongeza bidhaa kwenye cart. Ikiwa tayari ipo, inaongeza idadi (qty) tu.
-  function addToCart(id, name, price,img_url) {
+  function addToCart(id, name, price,img_url,btnEl) {
     if (!id || !name) return; // guard clause: data isiyo sahihi
 
     const cart = getCart();
@@ -294,7 +294,21 @@ async function handleCartSubmit() {
 
     saveCart(cart);
     renderCart();
+    showAddedFeedback(btnEl); 
   }
+
+  function showAddedFeedback(btnEl) {
+  if (!btnEl) return; // guard clause: kama button haikupitishwa
+
+  const originalText = btnEl.textContent;
+  btnEl.style.backgroundColor = 'green';
+  btnEl.textContent = 'Imeongezwa!';
+
+  setTimeout(() => {
+    btnEl.style.backgroundColor = '';
+    btnEl.textContent = originalText;
+  }, 1000);
+}
 
   // Inaondoa bidhaa moja kabisa kwenye cart kwa kutumia id yake.
   function removeFromCart(id) {
