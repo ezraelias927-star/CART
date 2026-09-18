@@ -336,6 +336,49 @@ def login():
     return jsonify({'message': 'Umeingia kikamilifu!', 'username': user.username}), 200
 
 
+@app.route('/api/orders', methods=['POST'])
+def create_order():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'message': 'Tafadhali ingia kwanza.'}), 401
+
+    data = request.get_json()
+    items = data.get('items', [])
+    if not items:
+        return jsonify({'message': 'Cart ni tupu.'}), 400
+
+    total_amount = 0
+    order_items_data = []
+
+    for item in items:
+        product = Product.query.get(item.get('product_id'))
+        if not product:
+            return jsonify({'message': f"Bidhaa haipo (id: {item.get('product_id')})."}), 404
+
+        quantity = item.get('quantity', 1)
+        if quantity <= 0 or product.stock_quantity < quantity:
+            return jsonify({'message': f"Stock haitoshi kwa '{product.name}'."}), 400
+
+        total_amount += product.price * quantity
+        order_items_data.append({'product': product, 'quantity': quantity})
+
+    new_order = Order(user_id=user_id, total_amount=total_amount, status='Pending')
+    db.session.add(new_order)
+    db.session.flush()  # inatupatia new_order.id kabla ya commit
+
+    for entry in order_items_data:
+        db.session.add(OrderItem(
+            order_id=new_order.id,
+            product_id=entry['product'].id,
+            quantity=entry['quantity'],
+            price_per_unit=entry['product'].price
+        ))
+        entry['product'].stock_quantity -= entry['quantity']
+
+    db.session.commit()
+    return jsonify({'message': 'Order imetumwa kikamilifu!', 'order_id': new_order.id}), 201
+
+
 # ---------- LOGOUT (kutoka) ----------
 @app.route('/logout', methods=['POST'])
 def logout():

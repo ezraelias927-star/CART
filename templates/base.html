@@ -205,6 +205,7 @@
     <span>Jumla</span>
     <span id="cartTotalAmount">Tsh 0</span>
   </div>
+  <button id="cartSubmitBtn" class="cart-submit-btn" style="width:100%;margin-top:14px;padding:12px;background:#FF5A1F;color:#fff;border:none;border-radius:8px;font-weight:600;">Endelea na Malipo</button>
 </div>
 
 <main>
@@ -221,6 +222,50 @@
   // =====================================================================
   // CART LOGIC (rahisi, kila function ina kazi moja tu)
   // =====================================================================
+
+  // Kutoka session ya Flask - inajua kama mtu ka-login bila fetch ya ziada
+const isLoggedIn = {{ 'true' if session.get('user_id') else 'false' }};
+document.getElementById('cartSubmitBtn').addEventListener('click', handleCartSubmit);
+
+async function handleCartSubmit() {
+  console.log('button clicked'); 
+  const cart = getCart();
+  if (cart.length === 0) return; // guard clause: cart tupu
+
+  if (!isLoggedIn) {
+    sessionStorage.setItem('returnTo', window.location.pathname);
+    window.location.href = '/auth';
+    return; // guard clause: hajalogin
+  }
+
+  // Tuma tu id na quantity - bei/jina/picha ni za kuonyesha tu, si za kutuma
+  const payload = {
+    items: cart.map(item => ({ product_id: item.id, quantity: item.qty }))
+  };
+
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message || 'Imeshindwa kutuma order.');
+      return;
+    }
+
+    alert(data.message || 'Order imetumwa!');
+    localStorage.removeItem('cart');
+    renderCart();
+    toggleCartPanel();
+  } catch (err) {
+    alert('Hitilafu ya mtandao. Jaribu tena.');
+  }
+}
+
+  document.getElementById('cartSubmitBtn').addEventListener('click', handleCartSubmit);
 
   // Inasoma cart kutoka localStorage. Ikiwa haipo, inarudisha list tupu.
   function getCart() {
@@ -286,7 +331,7 @@
 
   listEl.innerHTML = cart.map(item => `
     <div class="cart-item">
-      <img src="${item.imageUrl || 'https://placehold.co/50x50'}" alt="${item.name}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">
+      <img src="${item.img_url || 'https://placehold.co/50x50'}" alt="${item.name}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">
       <span>${item.name} x${item.qty}</span>
       <button onclick="removeFromCart('${item.id}')">Ondoa</button>
     </div>
