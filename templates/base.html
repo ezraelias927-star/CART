@@ -75,6 +75,15 @@
     overflow-x:auto;
     border-bottom:1px solid var(--border);
   }
+
+  .page-overlay{
+  position:fixed;
+  top:0; right:0; bottom:0; left:0;
+  background:rgba(36,31,27,0.4);
+  z-index:150;
+}
+.page-overlay[hidden]{ display:none; }
+
   .category-pill{
     padding:8px 16px;
     border-radius:999px;
@@ -208,6 +217,8 @@
   <button id="cartSubmitBtn" class="cart-submit-btn" style="width:100%;margin-top:14px;padding:12px;background:#FF5A1F;color:#fff;border:none;border-radius:8px;font-weight:600;">Endelea na Malipo</button>
 </div>
 
+<div class="page-overlay" id="pageOverlay" hidden></div>
+
 <main>
   {% block content %}
   <!-- Kurasa nyingine (mfano orodha ya bidhaa) zita-extend base.html hii -->
@@ -219,6 +230,22 @@
 </footer>
 
 <script>
+
+  // Inafungua au kufunga panel yoyote (cart au favorites), pamoja na overlay yake.
+function setPanelOpen(panelId, isOpen) {
+  document.getElementById(panelId).classList.toggle('open', isOpen);
+  document.getElementById('pageOverlay').hidden = !isOpen;
+}
+
+function toggleCartPanel() {
+  const isOpen = document.getElementById('cartPanel').classList.contains('open');
+  setPanelOpen('cartPanel', !isOpen);
+}
+
+function toggleFavoritesPanel() {
+  const isOpen = document.getElementById('favoritesPanel').classList.contains('open');
+  setPanelOpen('favoritesPanel', !isOpen);
+}
   // =====================================================================
   // CART LOGIC (rahisi, kila function ina kazi moja tu)
   // =====================================================================
@@ -343,7 +370,8 @@ async function handleCartSubmit() {
     return;
   }
 
-  listEl.innerHTML = cart.map(item => `
+  // Inachukua bidhaa 5 tu za kwanza pekee!
+  listEl.innerHTML = cart.slice(0, 5).map(item => `
     <div class="cart-item">
       <img src="${item.img_url || 'https://placehold.co/50x50'}" alt="${item.name}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">
       <span>${item.name} x${item.qty}</span>
@@ -372,11 +400,6 @@ async function handleCartSubmit() {
     updateCartBadge(cart);
     renderCartItemsList(cart);
     renderCartTotal(cart);
-  }
-
-  // Inafungua au kufunga cart panel.
-  function toggleCartPanel() {
-    document.getElementById('cartPanel').classList.toggle('open');
   }
 
   // =====================================================================
@@ -469,10 +492,6 @@ async function handleCartSubmit() {
     renderFavoritesItemsList(favorites);
   }
 
-  // Inafungua au kufunga favorites panel.
-  function toggleFavoritesPanel() {
-    document.getElementById('favoritesPanel').classList.toggle('open');
-  }
 
   // =====================================================================
   // GENERIC PANEL HELPER (inatumika na cart na favorites - DRY)
@@ -486,7 +505,7 @@ async function handleCartSubmit() {
     const clickedToggleBtn = toggleBtn.contains(clickEvent.target);
 
     if (!clickedInsidePanel && !clickedToggleBtn) {
-      panel.classList.remove('open');
+      setPanelOpen(panelId, false);
     }
   }
 

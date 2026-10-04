@@ -5,10 +5,20 @@
 {% block content %}
 <style>
   .product-grid{
-    display:grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap:18px;
+    display: grid;
+    /* Kwenye simu tunatumia repeat(2, 1fr) ili zikae column mbili kabisa */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px; /* Tumepunguza kidogo gap ili zitoshe vizuri kwenye skrini ndogo */
   }
+
+  /* Kama unataka kwenye skrini kubwa (kama Laptops/Tablets) ziongezeke ziwe nyingi */
+  @media (min-width: 768px) {
+    .product-grid {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 18px;
+    }
+  }
+  
   .product-card{
     border:1px solid var(--border);
     border-radius:var(--radius-md);
@@ -101,6 +111,7 @@
   }
 
   // Inachukua list ya bidhaa na kuzichora kwenye grid.
+  // Inachukua list ya bidhaa na kuzichora kwenye grid.
   function renderProductGrid(products) {
     const grid = document.getElementById('productGrid');
 
@@ -109,8 +120,19 @@
       return;
     }
 
-    grid.innerHTML = products.map(createProductCardHTML).join('');
-    syncAllFavoriteIcons(products);
+    // Kuchukua bidhaa 5 tu za kwanza kupitia slice(0, 5)
+    const productsToShow = products.slice(0, 5);
+    const remainingCount = products.length - 5;
+
+    let html = productsToShow.map(createProductCardHTML).join('');
+
+    // Kama ziko zaidi ya 5, tunaweza kuongeza ujumbe chini yake au kuacha hapo hapo
+    if (remainingCount > 0) {
+      html += `<div style="grid-column: 1 / -1; text-align: center; padding: 15px; color: var(--text-muted); font-size: 0.9rem;">Na bidhaa zingine ${remainingCount} zinapatikana kwenye mfumo...</div>`;
+    }
+
+    grid.innerHTML = html;
+    syncAllFavoriteIcons(productsToShow);
   }
 
   // Inatengeneza HTML ya kadi moja ya bidhaa.
