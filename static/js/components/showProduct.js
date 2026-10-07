@@ -1,4 +1,4 @@
-import { escapeHTML, formatPrice, debounce } from './dom.js';
+import { escapeHTML, formatPrice, debounce } from '../utils/dom.js';
 
 // ---------------------------------------------------------------
 // CONFIG
@@ -160,14 +160,14 @@ const handleGridClick = (event) => {
   if (button.dataset.action === 'favorite') {
     window.toggleFavorite(String(product.id), product.name, product.price);
   } else if (button.dataset.action === 'add-to-cart') {
-    window.addToCart(
-      String(product.id),
-      product.name,
-      product.price,
-      product.image_url || FALLBACK_IMAGE,
-      button
-    );
-  }
+  window.addToCart(
+    String(product.id),
+    product.name,
+    product.price,
+    product.image_url || FALLBACK_IMAGE,
+    button
+  );
+}
 };
 
 // ---------------------------------------------------------------

@@ -1,4 +1,4 @@
-import { escapeHTML } from './dom.js';
+import { escapeHTML } from '../utils/dom.js';
 
 // DATA: badilisha maudhui hapa tu
 const hero = {

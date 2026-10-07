@@ -1,4 +1,4 @@
-import { escapeHTML } from './dom.js';
+import { escapeHTML } from '../utils/dom.js';
 
 // DATA: jina linatumika kama neno la kutafuta bidhaa
 const categories = [

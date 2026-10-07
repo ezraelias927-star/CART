@@ -21,3 +21,4 @@ export const debounce = (fn, delay = 300) => {
     timer = setTimeout(() => fn(...args), delay);
   };
 };
+

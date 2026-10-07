@@ -134,9 +134,23 @@
   animation: shimmer 1.2s infinite linear;
   border-radius: var(--radius-sm);
 }
+
+.spinner {
+  display: inline-block;
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
 .skeleton .sk-img { height: 160px; border-radius: 0; }
 .skeleton .sk-line { height: 12px; margin-bottom: 8px; }
 .skeleton .sk-line.short { width: 55%; }
 .skeleton .sk-btn { height: 34px; margin-top: 8px; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) { .skeleton * { animation: none; } }
+
