@@ -1,10 +1,11 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for,jsonify
+from flask import Flask, render_template, request, redirect, url_for,jsonify,flash
 from werkzeug.utils import secure_filename
 from config import Config
 from database import db, User,Category,Product,Order,OrderItem
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import session
+from functools import wraps
 
 # Usanidi wa folda la kuhifadhi picha (hakikisha ipo kwenye app config yako)
 UPLOAD_FOLDER = 'static/uploads/products'
@@ -18,11 +19,41 @@ app.config.from_object(Config)
 
 db.init_app(app)
 
+ADMIN_USERNAME = os.getenv('ADMIN_USERNAME')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Angalia kama mtumiaji ame-login kama admin kwenye Session
+        if not session.get('is_admin'):
+            flash("Tafadhali ingia kama Admin kwanza!", "danger")
+            return redirect(url_for('admin_login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        # Mechi credentials kutoka .env
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['is_admin'] = True
+            flash("Umeingia kikamilifu!", "success")
+            return redirect(url_for('category_update'))
+        else:
+            flash("Username au Password siyo sahihi!", "danger")
+
+    return render_template('login.html')
+
 
 #ADMIN ROUTES KWA AJILI YA KUFANYA ACTION
 
 #kuongeza category
 @app.route('/admin/category/add', methods=['POST'])
+@admin_required
 def add_category():
     data = request.get_json()
     new_cat = Category(name=data['name'])
@@ -33,6 +64,7 @@ def add_category():
 
 #KUONGEZA BIDHAA
 @app.route('/admin/product/add', methods=['POST'])
+@admin_required
 def add_product():
     # 1. Kupokea data za maandishi kutoka request.form (sio get_json!)
     name = request.form.get('name')
@@ -97,6 +129,7 @@ def add_product():
 
 # UPDATE: Inabadilisha jina la category kwa kutumia ID
 @app.route('/admin/category/update/<int:id>', methods=['PUT'])
+@admin_required
 def update_category(id):
     cat = Category.query.get_or_404(id)
     cat.name = request.get_json()['name']
@@ -105,6 +138,7 @@ def update_category(id):
 
 # DELETE: Inaondoa category kwenye database kwa kutumia ID
 @app.route('/admin/category/delete/<int:id>', methods=['DELETE'])
+@admin_required
 def delete_category(id):
     cat = Category.query.get(id)
     if not cat:
@@ -120,6 +154,7 @@ def delete_category(id):
 
 #UPDATE: update bidhaa kwenye database
 @app.route('/admin/product/update/<int:id>', methods=['PUT'])
+@admin_required
 def update_product(id):
     p = Product.query.get(id)
     if not p: return jsonify({'error': 'Product haipo'}), 404
@@ -131,6 +166,7 @@ def update_product(id):
 
 #DELETE: ondoa product
 @app.route('/admin/product/delete/<int:id>', methods=['DELETE'])
+@admin_required
 def delete_product(id):
     p = Product.query.get(id)
     if not p: return jsonify({'error': 'Product haipo'}), 404
@@ -140,6 +176,7 @@ def delete_product(id):
 
 #DISPLAY: onesha recent orders
 @app.route('/admin/dashboard/recent-orders', methods=['GET'])
+@admin_required
 def get_recent_orders():
     recent = Order.query.order_by(Order.id.desc()).limit(5).all()
     return jsonify([{
@@ -154,11 +191,13 @@ def get_recent_orders():
 # Hizi zinarudisha DATA (JSON) tu, hakuna HTML - ndizo fetch() itakazoziita.
 
 @app.route('/admin/api/categories', methods=['GET'])
+@admin_required
 def get_categories():
     categories = Category.query.all()
     return jsonify([{'id': c.id, 'name': c.name} for c in categories])
 
 @app.route('/admin/api/products', methods=['GET'])
+@admin_required
 def get_products():
     products = Product.query.all()
     return jsonify([{
@@ -177,33 +216,40 @@ def get_products():
 # Hizi hurudisha ukurasa (template), API zako zinabaki kupokea/kuhifadhi data.
 
 @app.route('/admin/category', methods=['GET'])
+@admin_required
 def category_page():
     return render_template('admincategory.html')
 
 @app.route('/admin/bidhaa', methods=['GET'])
+@admin_required
 def bidhaa_page():
     categories = Category.query.all()
     return render_template('adminbidhaa.html',categories=categories)
 
 @app.route('/bidhaa/update', methods=['GET'])
+@admin_required
 def bidhaa_update():
     return render_template('bidhaaupdate.html')
 
 @app.route('/category/update', methods=['GET'])
+@admin_required
 def category_update():
     return render_template('categoryupdate.html')
 
 @app.route('/admin/categories', methods=['GET'])
+@admin_required
 def category_list_page():
     categories = Category.query.all()
     return render_template('category_list.html', categories=categories)
 
 @app.route('/admin/product', methods=['GET'])
+@admin_required
 def product_page():
     categories = Category.query.all()   # inahitajika kujaza <select> ya kategoria
     return render_template('product_add.html', categories=categories)
 
 @app.route('/admin/products', methods=['GET'])
+@admin_required
 def product_list_page():
     products = Product.query.all()
     return render_template('product_list.html', products=products)
@@ -384,6 +430,11 @@ def create_order():
 def logout():
     session.clear()
     return jsonify({'message': 'Umetoka kikamilifu!'}), 200
+
+@app.errorhandler(404)
+def page_not_found(e):
+    # Unaweza kurudisha HTML template maalum
+    return render_template('404.html'), 404
 
 
 with app.app_context():

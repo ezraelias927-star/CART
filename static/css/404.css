@@ -1,0 +1,204 @@
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #ffffff; /* Background Nyeupe */
+            color: #1e293b; /* Text Nyeusi/Warm Dark */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        /* Namba 404 Ya Ukubwa Sana (Orange/Yellow Gradient) */
+        .error-code {
+            font-size: 10rem;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(135deg, #f59e0b, #f97316, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 12px 30px rgba(249, 115, 22, 0.25);
+            margin-bottom: 5px;
+        }
+
+        /* Visual ya Kamdude Kanakodance */
+        .dancer-container {
+            height: 140px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin: 20px 0;
+        }
+
+        .dancer {
+            position: relative;
+            width: 80px;
+            height: 100px;
+            animation: dance 0.6s infinite alternate ease-in-out;
+        }
+
+        /* Kichwa cha Kamdude (Orange Bright) */
+        .head {
+            width: 42px;
+            height: 42px;
+            background-color: #f97316;
+            border-radius: 50%;
+            margin: 0 auto 5px auto;
+            position: relative;
+            animation: headBob 0.6s infinite alternate ease-in-out;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+        }
+
+        .head::after {
+            content: 'x_x';
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: bold;
+            position: absolute;
+            top: 9px;
+            left: 9px;
+        }
+
+        /* Kiwiliwili cha Kamdude (Yellow/Golden Amber) */
+        .body {
+            width: 26px;
+            height: 40px;
+            background-color: #eab308;
+            margin: 0 auto;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        /* Mikono ikidance (Orange/Yellow) */
+        .arm {
+            width: 25px;
+            height: 8px;
+            background-color: #f59e0b;
+            position: absolute;
+            top: 5px;
+            border-radius: 4px;
+        }
+
+        .arm.left {
+            left: -20px;
+            transform-origin: right center;
+            animation: danceArmLeft 0.6s infinite alternate ease-in-out;
+        }
+
+        .arm.right {
+            right: -20px;
+            transform-origin: left center;
+            animation: danceArmRight 0.6s infinite alternate ease-in-out;
+        }
+
+        /* Miguu ikidance (Dark Orange) */
+        .leg {
+            width: 8px;
+            height: 25px;
+            background-color: #ea580c;
+            position: absolute;
+            bottom: -20px;
+            border-radius: 4px;
+        }
+
+        .leg.left {
+            left: 3px;
+            transform-origin: top center;
+            animation: danceLegLeft 0.6s infinite alternate ease-in-out;
+        }
+
+        .leg.right {
+            right: 3px;
+            transform-origin: top center;
+            animation: danceLegRight 0.6s infinite alternate ease-in-out;
+        }
+
+        /* Keyframes za Dance Animation */
+        @keyframes dance {
+            0% { transform: translateY(0) rotate(-5deg); }
+            100% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        @keyframes headBob {
+            0% { transform: scale(1) rotate(-10deg); }
+            100% { transform: scale(1.1) rotate(10deg); }
+        }
+
+        @keyframes danceArmLeft {
+            0% { transform: rotate(40deg); }
+            100% { transform: rotate(-60deg); }
+        }
+
+        @keyframes danceArmRight {
+            0% { transform: rotate(-60deg); }
+            100% { transform: rotate(40deg); }
+        }
+
+        @keyframes danceLegLeft {
+            0% { transform: rotate(-20deg); }
+            100% { transform: rotate(30deg); }
+        }
+
+        @keyframes danceLegRight {
+            0% { transform: rotate(30deg); }
+            100% { transform: rotate(-20deg); }
+        }
+
+        /* Typography & Content */
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        p {
+            color: #64748b;
+            margin-bottom: 30px;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        /* Kitufe cha Orange / Yellow Accent */
+        .btn {
+            display: inline-block;
+            padding: 14px 34px;
+            background: linear-gradient(135deg, #f97316, #f59e0b);
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 700;
+            border-radius: 50px;
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.35);
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 28px rgba(249, 115, 22, 0.5);
+            background: linear-gradient(135deg, #ea580c, #d97706);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            .error-code { font-size: 7rem; }
+            h2 { font-size: 1.4rem; }
+        }
