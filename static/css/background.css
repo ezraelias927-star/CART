@@ -1,0 +1,15 @@
+:root{--bg-base:#fffdf8;--bg-yellow:rgba(255,214,102,.28);--bg-orange:rgba(255,150,60,.14);--bg-cream:rgba(255,236,179,.35)}
+html{background:var(--bg-base) !important}
+body,#app,#root,main,.wrapper,.page,section:not(#hero),.section,.container,.container-fluid,.bg-white,.bg-light{background:transparent !important}
+body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;will-change:transform;
+  background:
+    radial-gradient(40% 35% at 15% 20%,var(--bg-yellow),transparent 70%),
+    radial-gradient(35% 30% at 85% 15%,var(--bg-orange),transparent 70%),
+    radial-gradient(45% 40% at 70% 85%,var(--bg-cream),transparent 70%),
+    radial-gradient(30% 30% at 10% 90%,var(--bg-yellow),transparent 70%);
+  animation:bgFloat 28s ease-in-out infinite alternate}
+@keyframes bgFloat{
+  0%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(3%,-2%,0) scale(1.06)}
+  100%{transform:translate3d(-3%,3%,0) scale(1.1)}}
+@media(prefers-reduced-motion){body::before{animation:none}}

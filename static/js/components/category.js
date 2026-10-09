@@ -11,11 +11,11 @@ const categories = [
 
 const render = (el) => {
   el.innerHTML = `
-    <h2 class="section-title">Kategoria</h2>
-    <div class="category-list" role="list">
+    <h2 class="section-title h5 fw-bold mb-2 px-3 px-lg-5">Kategoria</h2>
+    <div class="category-list d-flex gap-3 gap-lg-4 overflow-x-auto py-2 px-3 px-lg-5" role="list">
       ${categories.map((c) => `
         <button type="button" class="category-chip" role="listitem" data-category="${escapeHTML(c.name)}">
-          <span aria-hidden="true">${c.icon}</span> ${escapeHTML(c.name)}
+          <span class="category-icon" aria-hidden="true">${c.icon}</span>${escapeHTML(c.name)}
         </button>`).join('')}
     </div>`;
 };
