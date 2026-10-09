@@ -6,6 +6,7 @@
 <title>{% block title %}Duka Letu{% endblock %}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/background.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/whatsapp.css') }}">
 </head>
 <body>
 
@@ -76,7 +77,9 @@
 <script src="{{ url_for('static', filename='js/api/orderApi.js') }}"></script>
 <script src="{{ url_for('static', filename='js/layout.js') }}" defer></script>
 <script type="module" src="{{ url_for('static', filename='js/utils/pageLoader.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/utils/whatsapp.js') }}"></script>
 
 {% block extra_js %}{% endblock %}
+
 </body>
 </html>

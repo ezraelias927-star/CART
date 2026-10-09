@@ -4,7 +4,7 @@ import { escapeHTML, formatPrice, debounce } from '../utils/dom.js';
 // CONFIG
 // ---------------------------------------------------------------
 const API_URL = '/api/searchproducts';
-const MAX_VISIBLE = 5;
+const MAX_VISIBLE = 10;
 const SEARCH_DELAY_MS = 300;
 const FALLBACK_IMAGE = 'https://placehold.co/300x200';
 
@@ -74,7 +74,7 @@ const cardHTML = (product) => {
         <h3 class="product-name">${name}</h3>
         <p class="product-price">${formatPrice(product.price)}</p>
         <button type="button" class="add-to-cart-btn" data-action="add-to-cart">
-          Ongeza kwenye Cart
+          Add to Cart
         </button>
       </div>
     </article>

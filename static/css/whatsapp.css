@@ -1,0 +1,75 @@
+/* Container inayohifadhi WhatsApp Button na Tooltip */
+.whatsapp-widget-container {
+  position: fixed;
+  bottom: 35px; /* Allowance nzuri kutoka chini (isiguse footer) */
+  right: 30px;  /* Umbali kutoka kulia */
+  z-index: 9999; /* Inahakikisha ipo juu ya vitu vyote hata ukiscroll */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Tooltip ya "Need Help?" Inayoonekana Real */
+.whatsapp-tooltip {
+  background: #ffffff;
+  color: #1f2937;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e5e7eb;
+  white-space: nowrap;
+  animation: floatTooltip 3s infinite ease-in-out;
+}
+
+/* Button yenyewe ya WhatsApp (Floating Circle) */
+.whatsapp-float-btn {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  background-color: #25d366; /* Official WhatsApp Color */
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.35); /* Glow shadow */
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.whatsapp-float-btn:hover {
+  transform: scale(1.1) translateY(-3px);
+  box-shadow: 0 12px 28px rgba(37, 211, 102, 0.5);
+}
+
+/* Red/Green Online Badge (Inaleta Usahihi/Reality) */
+.whatsapp-online-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  background-color: #10b981; /* Green Online */
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+}
+
+/* Animation ndogo ya kuifanya widget ionekane hai */
+@keyframes floatTooltip {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Kwenye Simu Ndogo (Mobile Responsiveness) */
+@media (max-width: 600px) {
+  .whatsapp-widget-container {
+    bottom: 20px;
+    right: 20px;
+  }
+  .whatsapp-tooltip {
+    display: none; /* Ficha maandishi kwenye simu ndogo ili isizibe skrini */
+  }
+}
