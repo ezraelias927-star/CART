@@ -436,7 +436,6 @@ def page_not_found(e):
     # Unaweza kurudisha HTML template maalum
     return render_template('404.html'), 404
 
-
 with app.app_context():
     db.create_all()
 

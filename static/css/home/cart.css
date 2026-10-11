@@ -1,0 +1,135 @@
+/* --- 1. RESPONSIVE GRID CONTAINER --- */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+/* --- 2. PRODUCT CARD STYLING --- */
+.product-card {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* Staggered Animation initial state */
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hover Effect: Card inanyanyuka juu na kuongeza kivuli */
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* --- 3. IMAGE & ZOOM EFFECT --- */
+.product-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  background-color: #f3f4f6; /* Placeholder color wakati picha inaload */
+}
+
+.product-card:hover img {
+  transform: scale(1.05); /* Picha inatanuka kidogo kwa ulaini */
+}
+
+/* --- 4. FAVORITE BUTTON (HEART) --- */
+.favorite-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.2s, transform 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.favorite-btn:hover {
+  background: #ffffff;
+  transform: scale(1.1);
+  color: #e11d48;
+}
+
+/* --- 5. PRODUCT INFO & TYPOGRAPHY --- */
+.product-info {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.product-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Inazuia jina kuwa refu kupita kiasi (inakata baada ya line 2) */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #059669; /* Rangi ya kijani ya kibishara */
+  margin: 0 0 12px 0;
+}
+
+/* --- 6. ADD TO CART BUTTON --- */
+.add-to-cart-btn {
+  width: 100%;
+  background-color: #111827;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #1f2937;
+}
+
+.add-to-cart-btn:active {
+  transform: scale(0.98);
+}
+
+/* --- 7. STAGGERED ANIMATION KEYFRAMES --- */
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Kila kadi inachelewa kidogo (staggered effect) ikija kuchorwa */
+.product-card:nth-child(1) { animation-delay: 0.05s; }
+.product-card:nth-child(2) { animation-delay: 0.1s; }
+.product-card:nth-child(3) { animation-delay: 0.15s; }
+.product-card:nth-child(4) { animation-delay: 0.2s; }
+.product-card:nth-child(5) { animation-delay: 0.25s; }
+.product-card:nth-child(6) { animation-delay: 0.3s; }
